@@ -13,7 +13,7 @@ class CategorySchema(SQLAlchemyAutoSchema):
         name = "CategoryItem"
 
     name = fields.String(required=True, validate=validate.Length(min=1, max=50))
-    color = fields.String(validate=validate.Length(max=7), allow_none=True)
+    color = fields.String(validate=validate.Regexp(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'), allow_none=True)
     task_count = fields.Function(lambda obj: len(obj.tasks) if obj.tasks else 0)
 
 # Marshmallow schema for Task with validation and nested category
