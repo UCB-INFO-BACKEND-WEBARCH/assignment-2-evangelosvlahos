@@ -1,0 +1,51 @@
+# Docker Compose configuration for the Task Management application
+services:
+  # Define the application service
+  app:
+    build: .
+    command: flask run --no-debugger --no-reload --host 0.0.0.0 --port 5001
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:berkeley153B@db:5432/TaskDB
+      - REDIS_URL=redis://redis:6379
+      - FLASK_APP=app
+    depends_on:
+      - db
+      - redis
+
+  # Define the worker service for handling background tasks
+  worker: 
+    build: .
+    command: rq worker notifications
+    deploy:
+      replicas: 1
+    environment:
+      - DATABASE_URL=postgresql://postgres:berkeley153B@db:5432/TaskDB
+      - REDIS_URL=redis://redis:6379
+      - FLASK_APP=app
+    depends_on:
+      - redis
+      - db
+
+  # Define the database service
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=berkeley153B
+      - POSTGRES_DB=TaskDB
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+ 
+ # Define the Redis service for background task queue
+  redis:
+      image: redis:7
+      ports:
+        - "6379:6379"
+
+# Define the volume for persistent database storage
+volumes:
+  db_data:
