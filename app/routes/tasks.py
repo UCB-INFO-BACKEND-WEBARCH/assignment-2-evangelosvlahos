@@ -104,8 +104,10 @@ class TaskList(MethodView):
             db.session.rollback()
             abort(400, message="Failed to create task")
 
-        notified = False
+        
         # Queue notification if due date is in the future and within 24 hours
+        notified = False
+
         if time_until_due and time_until_due > timedelta(0) and time_until_due <= timedelta(hours=24):
             try:
                 send_due_date_reminder.delay(task.title)
@@ -166,6 +168,33 @@ class Task(MethodView):
         except Exception as e:
             db.session.rollback()
             abort(400, message= "Failed to update task")
+
+
+        ###################### Due date notification logic ######################
+        # # Check if due date is being updated and calculate time until due date if it is
+        # time_until_due = None
+        # due_date = task_data.get('due_date')
+        # if due_date:
+        #     if isinstance(due_date, str):
+        #         try:
+        #             due_date = datetime.fromisoformat(due_date.replace('Z', '+00:00'))
+        #             task_data['due_date'] = due_date
+        #         except ValueError:
+        #             abort(400, message="Invalid due_date format. Must be ISO 8601 string.")
+        #     now = datetime.now(timezone.utc) if due_date.tzinfo else datetime.now()
+        #     time_until_due = due_date - now
+
+        # # Queue notification if due date is in the future and within 24 hours
+        # notified = False
+        
+        # if time_until_due and time_until_due > timedelta(0) and time_until_due <= timedelta(hours=24):
+        #     try:
+        #         send_due_date_reminder.delay(task.title)
+        #         notified = True
+        #     except Exception as e:
+        #         # Log the error but don't fail the task creation
+        #         print(f"Failed to queue notification: {e}")
+        ###################### Due date notification logic ######################
 
         task_schema = TaskSchema(many=False)
         serialized_task = task_schema.dump(task)
