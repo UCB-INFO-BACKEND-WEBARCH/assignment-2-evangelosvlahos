@@ -1,6 +1,7 @@
 # Marshmallow schemas for Task and Category with:
 # - Validation for title and description length
 # - Validation for due_date format
+# - Validation for color format (hex code)
 from marshmallow import fields, validate
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from app.models import TaskModel, CategoryModel
@@ -16,7 +17,7 @@ class CategorySchema(SQLAlchemyAutoSchema):
     color = fields.String(validate=validate.Regexp(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'), allow_none=True)
     task_count = fields.Function(lambda obj: len(obj.tasks) if obj.tasks else 0)
 
-# Marshmallow schema for Task with validation and nested category
+# Marshmallow schema for Task with validation
 class TaskSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = TaskModel
